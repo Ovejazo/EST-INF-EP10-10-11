@@ -1,0 +1,80 @@
+---
+title: "Tarea 9"
+author: "Grupo 10"
+date: "2024-12-10"
+output: html_document
+---
+
+# Preguntas
+
+1.  **Definir la semilla a utilizar, que corresponde a los últimos cuatro dígitos del RUN (sin considerar el dígito verificador) del integrante de menor edad del equipo.**\
+
+Para ello, preliminarmente se cargan todas las librerías necesarias:
+```{r}
+if(!require(dplyr)) install.packages("dplyr")
+if(!require(tidyr)) install.packages("tidyr")
+if(!require(ggplot2)) install.packages("ggplot2")
+if(!require(ggpubr)) install.packages("ggpubr")
+if(!require(ggmosaic)) install.packages("ggmosaic")
+if(!require(kableExtra)) install.packages("kableExtra")
+if(!require(pwr)) install.packages("pwr")
+if(!require(tidyverse)) install.packages("tidyverse")
+if(!require(rcompanion)) install.packages("rcompanion")
+if(!require(RVAideMemoire)) install.packages("RVAideMemoire")
+if(!require(ez)) install.packages("ez")
+if(!require(nlme)) install.packages("nlme")
+if(!require(emmeans)) install.packages("emmeans")
+```
+
+Vamos a usar la semilla del integrante mayor <Ingresar semillas aquí>
+
+**2.**  *Seleccionar una muestra de 150 mujeres (si la semilla es un número par) o 150 hombres (si la semilla es impar), asegurando que la mitad tenga estado nutricional “sobrepeso” y la otra mitad “no sobrepeso” en cada caso. Dividir esta muestra en dos conjuntos: los datos de 100 personas (50 con EN “sobrepeso”) para utilizar en la construcción de los modelos y 50 personas (25 con EN “sobrepeso”) para poder evaluarlos.*
+
+Al trabajar con una semilla par, se seleccionan 100 mujeres, como se muestra a continuación:
+
+```{r}
+# Se leen los datos
+datos = read.csv2("EP09 Datos.csv")
+
+# Se define la semilla previamente definida
+seed_value = 8178
+set.seed(seed_value)
+
+#Vamos a transformar la altura para poder trabajarla
+datos$Height <- datos$Height / 100
+
+#Creamos la variable IMC
+IMC <- datos$Weight/(datos$Height ** 2)
+
+IMC <- data.frame(IMC)
+
+#Lo agregamos a la tabla
+datos$IMC <- IMC
+
+#Creamos la variable dicotomica
+datos$EN <- ifelse(datos$IMC >= 23.2, "sobrepeso", "no_sobrepeso")
+
+```
+
+Ahora vamos a filtrar
+```{r}
+# Se filtran las observaciones correspondientes a mujeres, obteniendo una muestra aleatoria de 100 de ellas
+muestra_no_sobrepeso = datos %>% filter(EN = "sobrepeso")
+
+
+muestra_sobrepeso = datos %>% filter(EN = "no_sobrepeso")
+```
+
+```{r}
+# De dicha muestra, 70 de ellas se utilizan para construir modelos y 30 para su evaluación
+set.seed(seed_value) #NO BORRAR
+indices_modelo = sample(1:100, 70)
+
+muestra_modelo = muestra[indices_modelo, ]
+muestra_evaluacion = muestra[-indices_modelo, ]
+
+# Se imprime la cantidad de datos para fines de comprobación
+print(nrow(muestra_modelo))  # Debe ser 70
+print(nrow(muestra_evaluacion))  # Debe ser 30
+
+```
